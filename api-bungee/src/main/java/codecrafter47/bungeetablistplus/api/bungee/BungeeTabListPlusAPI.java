@@ -19,9 +19,6 @@
 
 package codecrafter47.bungeetablistplus.api.bungee;
 
-import codecrafter47.bungeetablistplus.api.bungee.placeholder.PlaceholderManager;
-import codecrafter47.bungeetablistplus.api.bungee.placeholder.PlaceholderProvider;
-import codecrafter47.bungeetablistplus.api.bungee.tablist.TabListProvider;
 import com.google.common.base.Preconditions;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -51,20 +48,21 @@ public abstract class BungeeTabListPlusAPI {
     protected abstract void registerVariable0(Plugin plugin, Variable variable);
 
     /**
-     * Registers a PlaceholderProvider
+     * Registers a custom variable bound to a specific server
      * <p>
-     * A PlaceholderProvider can add multiple placeholders
+     * You cannot use this to replace existing variables. If registering a variable which already
+     * exists there may be an exception thrown but there is no guarantee that an exception
+     * is thrown in that case.
      *
-     * @param placeholderProvider the PlaceholderProvider
-     * @deprecated Use {@link #registerVariable(Plugin, Variable)} instead.
+     * @param plugin   your plugin
+     * @param variable your variable
      */
-    @Deprecated
-    public static void registerPlaceholderProvider(PlaceholderProvider placeholderProvider) {
-        Preconditions.checkState(instance != null, "BungeeTabListPlus not initialized");
-        instance.registerPlaceholderProvider0(placeholderProvider);
+    public static void registerVariable(Plugin plugin, ServerVariable variable) {
+        Preconditions.checkState(instance != null, "instance is null, is the plugin enabled?");
+        instance.registerVariable0(plugin, variable);
     }
 
-    protected abstract void registerPlaceholderProvider0(PlaceholderProvider placeholderProvider);
+    protected abstract void registerVariable0(Plugin plugin, ServerVariable variable);
 
     /**
      * Create a new {@link CustomTablist}
@@ -77,21 +75,6 @@ public abstract class BungeeTabListPlusAPI {
     }
 
     protected abstract CustomTablist createCustomTablist0();
-
-    /**
-     * Set a custom tab list for a player
-     *
-     * @param player          the player
-     * @param tabListProvider the TabListProvider to use
-     * @deprecated Use {@link #setCustomTabList(ProxiedPlayer, CustomTablist)} instead
-     */
-    @Deprecated
-    public static void setCustomTabList(ProxiedPlayer player, TabListProvider tabListProvider) {
-        Preconditions.checkState(instance != null, "BungeeTabListPlus not initialized");
-        instance.setCustomTabList0(player, tabListProvider);
-    }
-
-    protected abstract void setCustomTabList0(ProxiedPlayer player, TabListProvider tabListProvider);
 
     /**
      * Set a custom tab list for a player
@@ -149,18 +132,6 @@ public abstract class BungeeTabListPlusAPI {
     protected abstract void removeCustomTabList0(ProxiedPlayer player);
 
     /**
-     * Get the PlaceholderManager instance
-     *
-     * @return the PlaceholderManager instance
-     */
-    public static PlaceholderManager getPlaceholderManager() {
-        Preconditions.checkState(instance != null, "BungeeTabListPlus not initialized");
-        return instance.getPlaceholderManager0();
-    }
-
-    protected abstract PlaceholderManager getPlaceholderManager0();
-
-    /**
      * Get the FakePlayerManager instance
      *
      * @return the FakePlayerManager instance
@@ -171,53 +142,4 @@ public abstract class BungeeTabListPlusAPI {
     }
 
     protected abstract FakePlayerManager getFakePlayerManager0();
-
-    /**
-     * This method can be used to obtain a skin object. The method will always return immediately.
-     * <p>
-     * If the requested skin is in the cache the method will return the requested skin. If not it
-     * will return the default skin (random Alex/ Steve skin) and start loading the requested skin in
-     * the background so the requested skin will be available next time this method is invoked.
-     * For this reason skin objects obtained by this method should not be cached.
-     *
-     * @param nameOrUUID either a valid player name or uuid or the name of an image file in the plugins/BungeeTabListPlus/heads directory
-     * @return the skin associated with the player or the default skin
-     * @throws IllegalArgumentException if the name or uuid is invalid
-     * @deprecated Use {@link #getIconFromPlayer(ProxiedPlayer)} instead.
-     */
-    @Deprecated
-    public static Skin getSkinForPlayer(String nameOrUUID) {
-        Preconditions.checkState(instance != null, "BungeeTabListPlus not initialized");
-        return instance.getSkinForPlayer0(nameOrUUID);
-    }
-
-    protected abstract Skin getSkinForPlayer0(String nameOrUUID);
-
-    /**
-     * This method returns an instance of the default skin (random Alex/ Steve skin)
-     *
-     * @return default skin
-     * @deprecated Use {@link Icon#DEFAULT} instead.
-     */
-    @Deprecated
-    public static Skin getDefaultSkin() {
-        Preconditions.checkState(instance != null, "BungeeTabListPlus not initialized");
-        return instance.getDefaultSkin0();
-    }
-
-    protected abstract Skin getDefaultSkin0();
-
-    /**
-     * Tell BungeeTabListPlus that all tab lists should be refreshed (at least) at the given interval
-     *
-     * @param interval interval in seconds
-     * @deprecated This is no longer required.
-     */
-    @Deprecated
-    public static void requireTabListUpdateInterval(double interval) {
-        Preconditions.checkState(instance != null, "BungeeTabListPlus not initialized");
-        instance.requireTabListUpdateInterval0(interval);
-    }
-
-    protected abstract void requireTabListUpdateInterval0(double interval);
 }

@@ -20,7 +20,6 @@
 package codecrafter47.bungeetablistplus.player;
 
 import codecrafter47.bungeetablistplus.BungeeTabListPlus;
-import codecrafter47.bungeetablistplus.api.bungee.Skin;
 import codecrafter47.bungeetablistplus.data.BTLPBungeeDataKeys;
 import codecrafter47.bungeetablistplus.data.NullDataHolder;
 import codecrafter47.bungeetablistplus.data.TrackingDataCache;
@@ -97,11 +96,6 @@ public class RedisPlayer implements Player {
     }
 
     @Override
-    public Skin getSkin() {
-        return BungeeTabListPlus.getInstance().getSkinManager().getSkin(uuid.toString());
-    }
-
-    @Override
     public int getGameMode() {
         return getOpt(BTLPBungeeDataKeys.DATA_KEY_GAMEMODE).orElse(0);
     }
@@ -119,7 +113,7 @@ public class RedisPlayer implements Player {
         if (key.getScope().equals(MinecraftData.SCOPE_SERVER)) {
             Optional<ServerInfo> server = getServer();
             if (server.isPresent()) {
-                BungeeTabListPlus.getInstance().getBridge().getServerDataHolder(server.get().getName());
+                return BungeeTabListPlus.getInstance().getBridge().getServerDataHolder(server.get().getName());
             }
             return NullDataHolder.INSTANCE;
         }
@@ -134,12 +128,12 @@ public class RedisPlayer implements Player {
     }
 
     @Override
-    public <T> void addDataChangeListener(DataKey<T> key, DataChangeListener<T> listener) {
+    public <T> void addDataChangeListener(DataKey<T> key, Runnable listener) {
         getResponsibleDataHolder(key).addDataChangeListener(key, listener);
     }
 
     @Override
-    public <T> void removeDataChangeListener(DataKey<T> key, DataChangeListener<T> listener) {
+    public <T> void removeDataChangeListener(DataKey<T> key, Runnable listener) {
         getResponsibleDataHolder(key).removeDataChangeListener(key, listener);
     }
 }

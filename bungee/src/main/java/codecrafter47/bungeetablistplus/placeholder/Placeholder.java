@@ -34,7 +34,11 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -48,7 +52,9 @@ public abstract class Placeholder {
 
     public static final Map<String, DataKey<String>> placeholderAPIDataKeys = Collections.synchronizedMap(new HashMap<>());
     public static final Map<String, DataKey<String>> remoteThirdPartyDataKeys = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String, DataKey<String>> remoteThirdPartyServerDataKeys = Collections.synchronizedMap(new HashMap<>());
     public static final Map<String, DataKey<String>> thirdPartyDataKeys = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String, DataKey<String>> thirdPartyServerDataKeys = Collections.synchronizedMap(new HashMap<>());
 
     static {
         playerPlaceholders.put("name", ofFunction(IPlayer::getName));
@@ -207,7 +213,7 @@ public abstract class Placeholder {
             String server = tokens[0].split(":")[1];
             return parseServerPlaceholder(Arrays.copyOfRange(tokens, 1, tokens.length), context -> server);
         } else if ("time".equals(tokens[0])) {
-            return new TimePlaceholder(TimePlaceholders.getFormat(tokens[1]));
+            return new TimePlaceholder(getFormat(tokens[1]));
         } else if ("server_player_count".equals(tokens[0])) {
             return SERVER_PLAYER_COUNT_PLACEHOLDER;
         } else if ("other_count".equals(tokens[0])) {
@@ -243,6 +249,18 @@ public abstract class Placeholder {
             return new ServerBoundPlaceholder(serverFunction, o -> o);
         } else if (serverPlaceholders.containsKey(tokens[0])) {
             return serverPlaceholders.get(tokens[0]).apply(Arrays.copyOfRange(tokens, 1, tokens.length), serverFunction);
+        } else if (thirdPartyServerDataKeys.containsKey(tokens[0])) {
+            DataKey<String> key = thirdPartyServerDataKeys.get(tokens[0]);
+            return new ServerBoundPlaceholder(serverFunction, serverName -> {
+                String value = BungeeTabListPlus.getInstance().getBridge().getServerDataHolder(serverName).get(key);
+                return value != null ? value : "";
+            });
+        } else if (remoteThirdPartyServerDataKeys.containsKey(tokens[0])) {
+            DataKey<String> key = remoteThirdPartyServerDataKeys.get(tokens[0]);
+            return new ServerBoundPlaceholder(serverFunction, serverName -> {
+                String value = BungeeTabListPlus.getInstance().getBridge().getServerDataHolder(serverName).get(key);
+                return value != null ? value : "";
+            });
         } else {
             return NULL_PLACEHOLDER;
         }
@@ -404,5 +422,11 @@ public abstract class Placeholder {
                 return new PlayerBoundPlaceholder(playerFunction, player -> player.getOpt(dataKey).map(i -> String.format(format, i)).orElse(""));
             }
         };
+    }
+
+    public static SimpleDateFormat getFormat(String pattern) {
+        SimpleDateFormat format = new SimpleDateFormat(pattern);
+        format.setTimeZone(BungeeTabListPlus.getInstance().getConfig().getTimeZone());
+        return format;
     }
 }
